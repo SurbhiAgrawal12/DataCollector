@@ -1,7 +1,7 @@
 const axios = require('axios');
 const config = require('config');
 const debug = require('debug')('app:sonarqubeService');
-const Database = require('../database');
+const Database = require('../../database');
 
 class SonarQube {
     constructor() {

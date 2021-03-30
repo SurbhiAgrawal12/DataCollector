@@ -1,0 +1,760 @@
+openapi: 3.0.1
+info:
+  title: Datacollector Services
+  description: An API that exposes all the data metric results for Jenkins shared library Consumption.
+  contact:
+    name: Surbhi Agrawal - Consultant
+    email: surbhiagarwal8@deloitte.com
+  version: 1.0.0
+servers:
+  - url: /
+tags:
+  - name: sonarqube-service
+    description: An API that exposes all the sonarqube related data metric services.
+  - name: blackduck-service
+    description: An API that exposes all the blackduck related services.
+security:
+  - ApiKeyAuth: []
+  - OAuth2:
+      - read
+      - write
+  - BearerAuth: []
+paths:
+  /api/sonarqube/metricsData:
+    get:
+      tags:
+        - sonarqube-service
+      summary: Get all metric data information owned by the specified project.
+      description: This operation will be used to retrieve metric data information.
+      operationId: getMetricStatisticsOfSonarQube
+      parameters:
+        - name: Request-Id
+          in: header
+          description: Service request Id used by the client of the API for tracking
+            purposes. Requests failed for network connectivity reasons can be retried
+            with the same request Ids and the implementers of the APIs should use them
+            whenever possible.
+          schema:
+            type: string
+        - name: Request-Timestamp
+          in: header
+          description: Timestamp when the request was made. In ISO 8601 format.
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          description: OAuth bearer token will be sent in this header as per the OAuth2
+            spec. This header will be used by the API gateway. The API does not need
+            to do anything with this header.
+          schema:
+            type: string
+        - name: Authorization2
+          in: header
+          description: JWT Token.
+          schema:
+            type: string
+        - name: path-params
+          in: header
+          description: This header element SHOULD be used on GET & DELETE calls where
+            any sensitive data needs to be passed. A JSON structure can be used to pass
+            various path parameters
+          schema:
+            type: string
+        - name: query-params
+          in: header
+          description: This header element SHOULD be used on GET & DELETE calls where
+            any sensitive data needs to be passed. A JSON structure can be used to pass
+            various query parameters
+          schema:
+            type: string
+        - name: session-Id
+          in: header
+          description: Identifies a unique Customer or batch session Id on the client
+            side to which this API call belongs. It helps to aggregate the APIs that
+            belong to a single session and can help in troubleshooting and session forensics.
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful response from API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SonarqubeResponse'
+        201:
+          description: The request has been fulfilled and resulted in a new resource
+            being Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        202:
+          description: The request has been accepted for processing, but the processing
+            has not been completed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        204:
+          description: No Content.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        400:
+          description: Request is invalid – either required data is missing or data
+            is not consistent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        401:
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        403:
+          description: Accessing the resource you were trying to reach is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        404:
+          description: If the {resourceId} being requested is not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        405:
+          description: Operation/method not allowed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        409:
+          description: Conflict/ rule violation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        422:
+          description: Unprocessable Entity.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Errors'
+        500:
+          description: System Exception
+          content: {}
+        503:
+          description: Service is down for maintenance.
+          content: {}
+  /authorization:
+    get:
+      tags:
+        - security-v1
+      summary: Get all authozation mappings.
+      description: This operation will be used to retrieve entitlement mapping info.
+      operationId: getEntitlements
+      parameters:
+        - name: offset
+          in: query
+          schema:
+            minimum: 0
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            maximum: 50
+            minimum: 1
+            type: integer
+        - name: count
+          in: query
+          schema:
+            type: integer
+        - name: Request-Id
+          in: header
+          description: Service request Id used by the client of the API for tracking
+            purposes. Requests failed for network connectivity reasons can be retried
+            with the same request Ids and the implementers of the APIs should use them
+            whenever possible.
+          schema:
+            type: string
+        - name: Trace-Id
+          in: header
+          description: A unique transaction Id for every request. Note that even though
+            the Request-Id might be same on the retried requests, the Unique-Tran-Id
+            should be unique for each request.
+          schema:
+            type: string
+        - name: Request-Timestamp
+          in: header
+          description: Timestamp when the request was made. In ISO 8601 format.
+          schema:
+            type: string
+        - name: Authorization
+          in: header
+          description: OAuth bearer token will be sent in this header as per the OAuth2
+            spec. This header will be used by the API gateway. The API does not need
+            to do anything with this header.
+          schema:
+            type: string
+        - name: Authorization2
+          in: header
+          description: JWT Token.
+          schema:
+            type: string
+        - name: user-id
+          in: header
+          description: User ID.
+          schema:
+            type: string
+        - name: user-roles
+          in: header
+          description: JSON Array in the form of String and Roles are separated by comma
+            delimiter.
+          schema:
+            type: string
+        - name: path-params
+          in: header
+          description: This header element SHOULD be used on GET & DELETE calls where
+            any sensitive data needs to be passed. A JSON structure can be used to pass
+            various path parameters
+          schema:
+            type: string
+        - name: query-params
+          in: header
+          description: This header element SHOULD be used on GET & DELETE calls where
+            any sensitive data needs to be passed. A JSON structure can be used to pass
+            various query parameters
+          schema:
+            type: string
+        - name: session-Id
+          in: header
+          description: Identifies a unique Customer or batch session Id on the client
+            side to which this API call belongs. It helps to aggregate the APIs that
+            belong to a single session and can help in troubleshooting and session forensics.
+          schema:
+            type: string
+        - name: channel-type
+          in: header
+          description: Digital channel type indicates where the request originated from.
+            Following are the possible set of values for the channel-type.
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/EntitlementsResponse'
+        201:
+          description: The request has been fulfilled and resulted in a new resource
+            being Created.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        202:
+          description: The request has been accepted for processing, but the processing
+            has not been completed.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        204:
+          description: No Content.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        400:
+          description: Request is invalid – either required data is missing or data
+            is not consistent.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        401:
+          description: Authorization Failure. Customer Token does not match. Customer
+            will need to re-do the OAuth.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        403:
+          description: Accessing the resource you were trying to reach is forbidden.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        404:
+          description: If the {resourceId} being requested is not found.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        405:
+          description: Operation/method not allowed.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        409:
+          description: Conflict/ rule violation.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        422:
+          description: Unprocessable Entity.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        500:
+          description: System Exception
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+        503:
+          description: Service is down for maintenance.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Errors'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    OAuth2:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/oauth/authorize
+          tokenUrl: https://example.com/oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
+  schemas:
+    SonarqubeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier generated by sonarqube API.
+        projectKey:
+          type: string
+          description: Key of the project.
+        projectName:
+          type: string
+          description: Name of the project.
+        projectDescription:
+          type: string
+          description: Description of the project.
+        qualifier:
+          type: string
+          description: qualifier of the project.
+        measures:
+          type: array
+          items:
+             $ref: '#/components/schemas/metricResult'
+          description: All metric results of the specified project.
+    metricResult:
+      type: object
+      properties:
+        functions:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of functions specified in the project.
+        violations:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of violations specified in the project.
+        new_code_smells:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of new smells specified in the code.
+        duplicated_files:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: duplicated_files specified in the code.
+        sqale_rating:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: rating of new sqale specified in the code.
+        comment_lines_density:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: percentage of commented line specified in the code.
+        duplicated_lines_density:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: percentage of duplicated line specified in the code.
+        comment_lines: 
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of commented_lines specified in the code.
+        reliability_rating:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: rating of reliability specified in the code.
+        ncloc:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of physical lines that contain at least one character which is neither a whitespace nor a tabulation nor part of a comment.
+        line_coverage:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: density of covered lines by unit tests.
+        security_remediation_effort:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: effort to fix all vulnerability issues. The measure is stored in minutes in the DB. An 8-hour day is assumed when values are shown in days.
+        sqale_index:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: effort to fix all maintainability issues. The measure is stored in minutes in the DB. An 8-hour day is assumed when values are shown in days.
+        duplicated_blocks:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of duplicated blocks of lines.
+        uncovered_lines:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of lines of code which are not covered by unit tests.
+        bugs:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of bugs specified in the code.
+        lines:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of physical lines (number of carriage returns) in the code.
+        reliability_remediation_effort:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: effort to fix all bug issues. The measure is stored in minutes in the DB. An 8-hour day is assumed when values are shown in days.
+        vulnerabilities:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of vulnerabilities specified in the code.
+        statements:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of statements specified in the code.
+        complexity:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: It is the complexity calculated based on the number of paths through the code. Whenever the control flow of a function splits, the complexity counter gets incremented by one.
+        security_rating:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: rating given to your project related to the vulnerabilities of your code.
+        coverage:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: How much of the source code has been covered by the unit tests(line covergae and condition covergae)
+        alert_status:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: State of the Quality Gate associated to your Project. Possible values are(ERROR, WARN, OK) 
+        files:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of files specified in the code.
+        code_smells:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of code_smells specified in the code.
+        open_issues:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of issues whose status is Open.
+        duplicated_lines:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of lines involved in duplications.
+        confirmed_issues:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of issues whose status is Confirmed.
+        ncloc_language_distribution:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: non Commenting Lines of Code Distributed By Language.
+        false_positive_issues:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of false positive issues.
+        sqale_debt_ratio: 
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: ratio between the cost to develop the software and the cost to fix it.
+        classes:
+            maxLength: 256
+            minLength: 0
+            type: string
+            description: number of classes (including nested classes, interfaces, enums and annotations).
+        reopened_issues:
+          maxLength: 256
+          minLength: 0
+          type: string
+          description: number of issues whose status is Reopened.
+        cognitive_complexity:
+            maxLength: 256
+            minLength: 0
+            type: string
+            description: how hard it is to understand the code's control flow.
+        lines_to_cover:
+            maxLength: 256
+            minLength: 0
+            type: string
+            description: number of lines of code which could be covered by unit tests.
+        new_security_remediation_effort:
+          type: array
+          items:
+            $ref: '#/components/schemas/periods'
+          description: Effort to fix all vulnerability issues.
+        new_lines_to_cover:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: identical to Lines to cover but restricted to new or updated source code.
+        new_uncovered_conditions:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Identical to Uncovered conditions but restricted to new or updated source code.
+        new_uncovered_lines:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Identical to Uncovered lines but restricted to new or updated source code.
+        new_sqale_debt_ratio:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Ratio between the cost to develop the code changed in the leak period and the cost of the issues linked to it.
+        new_reliability_remediation_effort:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Same as Reliability remediation effort by on the code changed in the leak period.
+        new_vulnerabilities:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Number of new vulnerabilities in the code.
+        new_technical_debt:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Technical Debt of new code.
+        new_bugs:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Number of new bugs.
+        new_violations:
+          type: array
+          items:
+              $ref: '#/components/schemas/periods'
+          description: Number of new issues.
+    periods:
+      type: object
+      properties:
+        index:
+          type: integer
+          description: index.
+        value:
+          maxLength: 20
+          minLength: 0
+          type: string
+          description: value.
+        bestValue:
+          type: boolean
+          description: status of value.
+    quality_gate_details:
+      type: object
+      properties:
+        level:
+          type: string
+          description: levels
+        conditions:
+            type: array
+            items:
+              $ref: '#/components/schemas/quality_gate_metric'
+        ignoredConditions:
+            type: boolean
+    quality_gate_metric:
+      type: object
+      properties:
+        metric:
+          type: string
+          description: metric key name
+        op:
+            type: string
+            description: op
+        period:
+            type: string
+            description: period
+        error:
+            type: string
+            description: error
+        actual:
+            type: string
+            description: actual
+        level:
+            type: string
+            description: level
+    EntitlementsResponse:
+      type: object
+    Version:
+      required:
+        - versionId
+        - identifier
+        - versionTimestamp
+      type: object
+      properties:
+        versionId:
+          type: integer
+          description: version number.
+        identifier:
+          maxLength: 20
+          minLength: 0
+          type: string
+          description: version identifier- UUID.
+        versionTimestamp:
+          type: string
+          description: versionTimestamp.
+          format: timestamp
+      description: Api version Info for domain model
+    Error:
+      required:
+        - errorCode
+        - errorDescription
+        - errorFieldName
+      type: object
+      properties:
+        errorCode:
+          maxLength: 3
+          minLength: 0
+          type: string
+          description: A code for a type of failure or issue.
+        errorDescription:
+          maxLength: 250
+          minLength: 0
+          type: string
+          description: Freeform explanatory text for the error.
+        errorFieldName:
+          maxLength: 50
+          minLength: 0
+          type: string
+          description: Field Name, on which validation error occurred.
+        version:
+          $ref: '#/components/schemas/Version'
+      description: Api error  which indicates the error code and error message
+    Errors:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+      description: Api error  which indicates the error code and error message
+  parameters:
+    Request-Id:
+      name: Request-Id
+      in: header
+      description: Service request Id used by the client of the API for tracking purposes.
+        Requests failed for network connectivity reasons can be retried with the same
+        request Ids and the implementers of the APIs should use them whenever possible.
+      schema:
+        type: string
+    Request-Timestamp:
+      name: Request-Timestamp
+      in: header
+      description: Timestamp when the request was made. In ISO 8601 format.
+      schema:
+        type: string
+    Authorization:
+      name: Authorization
+      in: header
+      description: OAuth bearer token will be sent in this header as per the OAuth2
+        spec. This header will be used by the API gateway. The API does not need to
+        do anything with this header.
+      schema:
+        type: string
+    Authorization2:
+      name: Authorization2
+      in: header
+      description: JWT Token.
+      schema:
+        type: string
+    path-params:
+      name: path-params
+      in: header
+      description: This header element SHOULD be used on GET & DELETE calls where
+        any sensitive data needs to be passed. A JSON structure can be used to pass
+        various path parameters
+      schema:
+        type: string
+    query-params:
+      name: query-params
+      in: header
+      description: This header element SHOULD be used on GET & DELETE calls where
+        any sensitive data needs to be passed. A JSON structure can be used to pass
+        various query parameters
+      schema:
+        type: string
+    session-Id:
+      name: session-Id
+      in: header
+      description: Identifies a unique Customer or batch session Id on the client
+        side to which this API call belongs. It helps to aggregate the APIs that belong
+        to a single session and can help in troubleshooting and session forensics.
+      schema:
+        type: string

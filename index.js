@@ -2,7 +2,7 @@
 const error = require('./middleware/error');
 const express = require('express');
 const app = express();
-const sonarqubeController = require('./routes/sonarqube-routes');
+const sonarqubeController = require('./api/controllers/sonarqubeController');
 const bodyParser = require('body-parser');
 const config = require('config');
 
