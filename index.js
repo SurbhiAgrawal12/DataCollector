@@ -1,5 +1,7 @@
 //require('express-async-errors');
 const error = require('./middleware/error');
+const isUserAuthenticated = require('./middleware/auth');
+const getBearerToken = require('./middleware/generateToken');
 const express = require('express');
 const app = express();
 const sonarqubeController = require('./api/controllers/sonarqubeController');
@@ -16,7 +18,8 @@ const debug = require('debug')('app:startup');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use('/api/sonarqube', sonarqubeController);
+//api/sast/
+app.use('/api/sonarqube', [ getBearerToken, isUserAuthenticated], sonarqubeController);
 
 // single place to handle the error
 //app.use(error);
@@ -24,6 +27,7 @@ app.use('/api/sonarqube', sonarqubeController);
 const port = !!(config.get('SERVER_PORT')) ? config.get('SERVER_PORT') : !!(process.env.SERVER_PORT) ? process.env.SERVER_PORT : 8080;
 app.listen(port, () => {
   debug(`Application running on ${port}`);
+  //console.log(`Application running on ${port}`);
 });
 
 
