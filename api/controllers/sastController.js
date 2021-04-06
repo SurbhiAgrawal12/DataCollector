@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const asyncMiddleware = require('../../middleware/async');
-const SonarService = require('../services/sonarqubeService');
-const sonarService = new SonarService();
+const SastService = require('../services/sastService');
+const sastService = new SastService();
 const debug = require('debug')('app:sonarController');
 
 router.get('/metricsData', asyncMiddleware(async (req, res) => {
-    let dataMetrics = await sonarService.main();
+    let dataMetrics = await sastService.main();
     debug("dataMetrics :: ", JSON.stringify(dataMetrics));
     res.send(dataMetrics);
 
