@@ -4,7 +4,6 @@ const error = require('./middleware/error');
 //const getBearerToken = require('./middleware/generateToken');
 const express = require('express');
 const app = express();
-const sonarqubeController = require('./api/controllers/sonarqubeController');
 const sastController = require('./api/controllers/sastController');
 const bodyParser = require('body-parser');
 const config = require('config');
@@ -20,7 +19,7 @@ if (process.env.NODE_ENV !== 'production') {
 const debug = require('debug')('app:startup');
 
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json());  //  parses body of the request
 
 //app.use('/api/sast/', [ getBearerToken, isUserAuthenticated], sonarqubeController);
 app.use('/api/sast', sastController);
@@ -31,10 +30,8 @@ app.use('/api/sast', sastController);
 const port = !!(config.get('SERVER_PORT')) ? config.get('SERVER_PORT') : !!(process.env.SERVER_PORT) ? process.env.SERVER_PORT : 8080;
 app.listen(port, () => {
   // (async () => { await db.connectToDatabase(); })();
-  let listOfSastTool = ["sonarqubeConfig"];
-
-  debug(`Application running on ${port}`);
-  //console.log(`Application running on ${port}`);
+  //debug(`Application running on ${port}`);
+  console.log(`Application running on ${port}`);
 });
 
 

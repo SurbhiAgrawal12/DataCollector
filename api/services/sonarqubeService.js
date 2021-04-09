@@ -1,43 +1,20 @@
-const axios = require('axios');
-const config = require('config');
-const debug = require('debug')('app:sonarqubeService');
-const Database = require('../../database');
+const SastService = require('./sastService');
+let sastService = new SastService();
+const SonarqubeAssesmentReport = require('../model/sonarqube');
+let sonarqubeAssesmentReport = new SonarqubeAssesmentReport();
 
-class SonarQube {
+class SonarqubeService {
     constructor() {
+        this.requestParams = {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: ""
+            },
+            async: true,
+            crossDomain: true
+        };
     }
-
-    getmetricStatisticsOfSonarQube(apiURL) {
-        return new Promise(async (resolve, reject) => {
-
-            const requestParams = {
-                method: "GET",
-                url: apiURL,
-                headers: {
-                    "Content-Type": "application/json",
-                    //    Authorization: "Basic YWRtaW46YWRtaW4="
-                },
-                auth: {
-                    username: 'admin',
-                    password: 'admin'
-                },
-                async: true,
-                crossDomain: true
-            };
-            axios(requestParams)
-                .then(response => {
-                    debug("API-RESPONSE :: ", JSON.stringify(response.data));
-                    resolve(response.data);
-                })
-                .catch(function (error) {
-                    // handle error
-                    debug(" API-RESPONSE ERROR CATCH BLOCK :: ", JSON.stringify(error));
-                    resolve(error);
-                });
-        });
-    }
-
-    main() {
+    getmetricStatisticsOfSonarQube(projectKey, projectName) {
         return new Promise(async (resolve, reject) => {
             try {
                 const metricKey = `
@@ -101,48 +78,22 @@ class SonarQube {
                 test_errors,
                 test_failures,
                 test_success_density`;
-                let apiURL = `${config.get('sonarqubeConfig.baseurl')}/measures/component?componentKey=${config.get('sonarqubeConfig.projectKey')}&metricKeys=${metricKey}`;
-                let apiResponse = await this.getmetricStatisticsOfSonarQube(apiURL);
+                let apiURL = `${config.get('sonarqubeConfig.baseurl')}/measures/component?componentKey=${projectKey}&metricKeys=${metricKey}`;
+                this.requestParams["url"] = apiURL;
+                this.requestParams["method"] = "GET";
+                let apiResponse = await sastService.getAPIResult(this.requestParams);
 
-                let sonarSchema = {
-                    id: { type: String },  //ObjectID
-                    projectKey: { type: String },
-                    projectName: { type: String },
-                    projectDescription: { type: String },
-                    qualifier: { type: String },
-                    measures: { type: Array }
-                };
-
-                let sonarModel = {
-                    id: (!!apiResponse.component.id) ? apiResponse.component.id : "123",
-                    projectKey: (!!apiResponse.component.key) ? apiResponse.component.key : "",
-                    projectName: (!!apiResponse.component.name) ? apiResponse.component.name : "",
-                    projectDescription: (!!apiResponse.component.description) ? apiResponse.component.description : "",
-                    qualifier: (!!apiResponse.component.qualifier) ? apiResponse.component.qualifier : "",
-                    measures: (!!apiResponse.component.measures) ? apiResponse.component.measures : []
-                }
-
-                let apiDocId = (!!apiResponse.component.id) ? apiResponse.component.id : "";
-                const collectionName = "MeasureStatistics";
-                const db = new Database();
-                let ModelClass = await db.saveDocumentInCollection(sonarSchema, sonarModel, collectionName, apiDocId);
-
-                //fetch data   from databse and then return;
-                let dbResponse = await db.getDocumentFromCollection(ModelClass, sonarSchema, collectionName);
-                debug("DB-RESPONSE :: ", JSON.stringify(dbResponse));
-                resolve(dbResponse);
+                sonarqubeAssesmentReport["ProjectKey"] = (!!apiResponse.component.key) ? apiResponse.component.key : projectKey;
+                sonarqubeAssesmentReport["ProjectName"] = (!!apiResponse.component.name) ? apiResponse.component.name : projectName;
+                sonarqubeAssesmentReport["ProjectDescription"] = (!!apiResponse.component.description) ? apiResponse.component.description : "";
+                sonarqubeAssesmentReport["qualifier"] = (!!apiResponse.component.qualifier) ? apiResponse.component.qualifier : "";
+                sonarqubeAssesmentReport["measures"] = (!!apiResponse.component.measures) ? apiResponse.component.measures : [];
+                resolve(sonarqubeAssesmentReport);
+            } catch (err) {
+                console.log(JSON.stringify(err));
+                resolve(false);
             }
-            catch (err) {
-                debug("Error occured :: ", JSON.stringify(ERR));
-                resolve({
-                    status: 500,
-                    body: "Something went wrong!!"
-                });
-            }
-        });
+        })
     }
 }
-
-module.exports = SonarQube;
-
-
+module.exports = SonarqubeService;
